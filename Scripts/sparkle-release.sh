@@ -47,6 +47,10 @@ xcodebuild -project BarX.xcodeproj -scheme BarX -configuration Release \
   CODE_SIGNING_ALLOWED=NO build >/dev/null
 
 APP="build/Build/Products/Release/BarX.app"
+# ad-hoc подпись (без сертификата): чтобы Sparkle корректно ставил и запускал обновление.
+# Важно: без --identifier подпись остаётся «linker-signed», и generate_appcast её отвергает.
+xattr -cr "$APP"
+codesign --force --deep --sign - --identifier "com.ilya.BarX" "$APP" >/dev/null 2>&1 || echo "предупреждение: ad-hoc подпись не удалась"
 STAGE="build/release"
 rm -rf "$STAGE" && mkdir -p "$STAGE"
 
