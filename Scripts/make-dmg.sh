@@ -48,7 +48,8 @@ export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 
 say "Собираю Release-версию…"
 xcodebuild -project "$APP_NAME.xcodeproj" -scheme "$APP_NAME" -configuration Release \
-  -derivedDataPath "$WORK/dd" CODE_SIGNING_ALLOWED=NO build >"$WORK/build.log" 2>&1 \
+  -derivedDataPath "$WORK/dd" -clonedSourcePackagesDirPath "$WORK/spm" \
+  CODE_SIGNING_ALLOWED=NO build >"$WORK/build.log" 2>&1 \
   || { echo "Сборка не удалась, подробности: $WORK/build.log" >&2; tail -20 "$WORK/build.log"; exit 1; }
 
 BUILT_APP="$WORK/dd/Build/Products/Release/$APP_NAME.app"
