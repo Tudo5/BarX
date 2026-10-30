@@ -1,22 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"
-     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
-     xmlns:dc="http://purl.org/dc/elements/1.1/">
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>BarX</title>
-        <link>https://github.com/Tudo5/BarX</link>
-        <description>Обновления BarX</description>
-        <language>ru</language>
-        <!--
-          Файл обновлений Sparkle (appcast).
-
-          Сейчас пусто: релиза с .dmg для актуальной версии ещё нет, поэтому
-          приложение считает, что обновлений нет.
-
-          При выпуске новой версии НЕ правьте этот файл руками. Запустите
-          Scripts/sparkle-release.sh — он соберёт подписанный .dmg и
-          сгенерирует здесь элемент <item> с EdDSA-подписью. Затем залейте
-          .dmg в GitHub Releases и закоммитьте обновлённый appcast.xml в main.
-        -->
+        <item>
+            <title>1.5.2</title>
+            <pubDate>Fri, 30 Oct 2026 18:51:50 +0300</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.5.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.6</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/Tudo5/BarX/releases/download/v1.5.2/BarX.1.5.2.Global.Update.dmg" length="8888359" type="application/octet-stream" sparkle:edSignature="Pd4uU9Iae/o1UIdRKwdHoRVia+aY52VfEOWe+eyf/6ayWgn1cDDPagTU5wq0Idz1xy1mudIbL0wRNDM4eQGICg=="/>
+        </item>
     </channel>
 </rss>
