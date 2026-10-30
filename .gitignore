@@ -1,0 +1,33 @@
+# --- Xcode ---
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+
+# Профилирование (появляется при запуске Debug-сборки)
+*.profraw
+
+# --- macOS ---
+.DS_Store
+Icon
+
+# --- Личные инструкции для агента ---
+# AGENTS.md — общий контекст проекта, его нужно коммитить.
+# AGENTS.local.md / CLAUDE.local.md — личный слой, он не публикуется.
+AGENTS.local.md
+CLAUDE.local.md
+
+# --- Sparkle: ключи подписи обновлений НИКОГДА не коммитим ---
+*.private.key
+ed25519-private.key
+BarX-Sparkle-keys/
+
+# --- Готовые сборки/дистрибутивы ---
+*.dmg
+*.zip
+!appcast.xml

@@ -2,7 +2,7 @@
 //  BarXUITestsLaunchTests.swift
 //  BarXUITests
 //
-//  Created by Илья on 27.08.2026.
+//  Снимок экрана первого запуска — визуальная регрессия.
 //
 
 import XCTest
@@ -22,10 +22,9 @@ final class BarXUITestsLaunchTests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        // Ждём первый интерфейс: на чистом прогоне это приветствие
+        let welcome = app.staticTexts["Добро пожаловать в BarX"]
+        _ = welcome.waitForExistence(timeout: 15)
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"
