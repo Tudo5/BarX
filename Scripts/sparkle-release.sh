@@ -30,6 +30,16 @@ export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 
 echo "==> Версия $VERSION в Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" Info.plist
+# Sparkle сравнивает обновления по CFBundleVersion (сборке), поэтому её тоже
+# увеличиваем. Можно передать явное значение третьим аргументом.
+if [ -n "${3:-}" ]; then
+  BUILD="$3"
+else
+  CUR_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Info.plist)
+  BUILD=$((CUR_BUILD + 1))
+fi
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" Info.plist
+echo "    short=$VERSION  build=$BUILD"
 
 echo "==> Сборка Release"
 xcodebuild -project BarX.xcodeproj -scheme BarX -configuration Release \
