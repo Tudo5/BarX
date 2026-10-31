@@ -30,4 +30,5 @@ BarX-Sparkle-keys/
 # --- Готовые сборки/дистрибутивы ---
 *.dmg
 *.zip
-!appcast.xml
+# appcast.xml генерируется и публикуется в репозиторий BarX-updates
+appcast.xml

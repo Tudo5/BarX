@@ -1,149 +1,123 @@
 # BarX — как выпускать обновления (пошагово)
 
-Обновления работают через **Sparkle 2**: приложение читает `appcast.xml`, видит новую
-версию, скачивает `.dmg`, проверяет **EdDSA-подпись** и ставит её сам.
+Обновления работают через **Sparkle 2**. Приложение читает `appcast.xml`, видит новую
+версию, скачивает `.dmg`, проверяет **EdDSA-подпись** и ставит её само.
 
-Этот документ — для самостоятельного выпуска. Всё можно сделать без посторонней помощи.
+## Архитектура: два репозитория
+
+| Репозиторий | Видимость | Что внутри |
+|---|---|---|
+| `Tudo5/BarX` | **можно сделать приватным** | Исходный код проекта |
+| `Tudo5/BarX-updates` | **публичный** | Только `appcast.xml` + `.dmg` (файлы обновлений) |
+
+Приложение берёт фид отсюда:
+`https://raw.githubusercontent.com/Tudo5/BarX-updates/main/appcast.xml`
+
+Так исходники скрыты, а авто-обновления работают у всех.
 
 ---
 
-## 0. Что должно быть настроено один раз (уже настроено)
+## 0. Что настроено один раз
 
-- **Инструменты Sparkle**: `~/BarX-Sparkle-keys/bin/` (`generate_appcast`, `sign_update`, `BinaryDelta`).
-- **Приватный ключ** — в Связке ключей, учётная запись **`com.ilya.BarX`**
-  (тип «private key», имя «Private key for signing Sparkle updates»).
-  Бэкап: `~/BarX-Sparkle-keys/ed25519-private.key` — **храни его, не теряй и не коммить**.
-- **Публичный ключ** вшит в `Info.plist` (`SUPublicEDKey`).
-- **`appcast.xml`** лежит в ветке `main`; приложение берёт его по адресу
-  `https://raw.githubusercontent.com/Tudo5/BarX/main/appcast.xml`.
-- **Репозиторий**: `https://github.com/Tudo5/BarX` (ветка `main`).
-- **Проект на диске**: `~/Desktop/BarX`.
+- **Инструменты Sparkle**: `~/BarX-Sparkle-keys/bin/`
+- **Приватный ключ**: Связка ключей, аккаунт **`com.ilya.BarX`**;
+  бэкап `~/BarX-Sparkle-keys/ed25519-private.key` (не терять, не коммитить).
+- **Публичный ключ** — в `Info.plist` (`SUPublicEDKey`).
+- **Фид** — в `Tudo5/BarX-updates` (публичный репозиторий).
+- Проект на диске: `~/Desktop/BarX`.
 
-Проверить, что ключ на месте (необязательно):
+Проверка ключа:
 ```bash
 ~/BarX-Sparkle-keys/bin/generate_keys --account com.ilya.BarX -p
 ```
-Должен напечатать публичный ключ `pBPVmIIK14KtxXyk1RzGtpDVba3iiAdG02W+dJS/Hqo=`.
 
 ---
 
-## 1. Выпуск новой версии — 4 шага
+## 1. Выпуск новой версии (пример: 1.5.6)
 
-> Пример: выпускаем версию **1.5.4**. Подставляй свой номер.
-
-### Шаг 1. Собрать подписанный релиз (одна команда)
-
+### Шаг 1. Собрать подписанный universal-релиз
 ```bash
 cd ~/Desktop/BarX
-Scripts/sparkle-release.sh ~/BarX-Sparkle-keys/bin 1.5.4
+Scripts/sparkle-release.sh ~/BarX-Sparkle-keys/bin 1.5.6
 ```
+Скрипт: ставит версию, увеличивает build, собирает **universal (arm64+x86_64)**
+в `/tmp` (вне iCloud), ad-hoc подписывает и **проверяет** подпись, делает
+`build/release/BarX.dmg`, генерирует `appcast.xml` со ссылкой на `BarX-updates`.
 
-Что делает скрипт:
-1. ставит `CFBundleShortVersionString = 1.5.4`;
-2. **увеличивает build-номер** (`CFBundleVersion`) — Sparkle сравнивает именно сборки;
-3. собирает Release;
-4. делает ad-hoc подпись кода (без неё `generate_appcast` откажется);
-5. создаёт образ `build/release/BarX.dmg`;
-6. генерирует `appcast.xml` с EdDSA-подписью.
-
-Проверь, что всё получилось:
+Проверка:
 ```bash
 ls -lh build/release/BarX.dmg
 grep -E "sparkle:version|shortVersionString|enclosure" appcast.xml
 ```
-В `appcast.xml` должна появиться запись с твоей версией и ссылкой на `.../v1.5.4/BarX.dmg`.
 
-### Шаг 2. Создать GitHub Release и загрузить DMG
+### Шаг 2. Создать релиз в `BarX-updates` и загрузить DMG
+1. https://github.com/Tudo5/BarX-updates/releases/new
+2. **Tag:** `v1.5.6` (ровно `v` + версия)
+3. **Title:** `BarX 1.5.6`, **Description:** что нового
+4. **Attach:** `build/release/BarX.dmg` — имя не менять (**`BarX.dmg`**)
+5. **Publish release**
 
-Через сайт (самый простой и безопасный способ):
-1. Открой https://github.com/Tudo5/BarX/releases/new
-2. **Tag:** `v1.5.4` — ровно `v` + версия (обязательно совпадает с версией из шага 1).
-3. **Title:** например `BarX 1.5.4`
-4. **Description:** что нового (это увидят пользователи в окне обновления).
-5. **Attach binaries:** прикрепи файл `build/release/BarX.dmg`.
-   ⚠️ Имя файла должно остаться **`BarX.dmg`** (не переименовывай!).
-6. **Publish release**.
-
-### Шаг 3. Опубликовать фид обновлений
-
-```bash
-cd ~/Desktop/BarX
-git add appcast.xml Info.plist
-git commit -m "Release 1.5.4"
-git push origin main
-```
+### Шаг 3. Положить `appcast.xml` в `BarX-updates/main`
+- Открой https://github.com/Tudo5/BarX-updates/blob/main/appcast.xml
+- Карандаш (Edit) → вставь новое содержимое локального `appcast.xml` → **Commit changes**
+  (или замени файл через «Add file → Upload files»).
 
 ### Шаг 4. Проверить
-
-- Фид отдаёт новую версию:
-  ```bash
-  curl -s https://raw.githubusercontent.com/Tudo5/BarX/main/appcast.xml | grep -E "sparkle:version|shortVersionString"
-  ```
-- Файл по ссылке скачивается (не 404):
-  ```bash
-  curl -sIL https://github.com/Tudo5/BarX/releases/download/v1.5.4/BarX.dmg | grep -iE "^HTTP/|content-length"
-  ```
-- На приложении **старой** версии: меню → «Проверить обновления» → появится окно Sparkle
-  «Установить и перезапустить / Позже» → обновление ставится само.
+```bash
+curl -s https://raw.githubusercontent.com/Tudo5/BarX-updates/main/appcast.xml | grep -E "sparkle:version|shortVersionString"
+curl -sIL https://github.com/Tudo5/BarX-updates/releases/download/v1.5.6/BarX.dmg | grep -iE "^HTTP/|content-length"
+```
+На старом приложении: меню → «Проверить обновления» → окно Sparkle → «Установить и перезапустить».
 
 ---
 
-## 2. Правила, которые нельзя нарушать
+## 2. Правила
 
-1. **Порядок:** сначала загрузить `.dmg` в релиз, **потом** пушить `appcast.xml`.
-   Иначе пользователь нажмёт «Обновить», а файла ещё нет → ошибка скачивания (404).
-2. **Версия и build обязаны расти.** Скрипт поднимает build сам; не откатывай их назад.
-3. **Тег = `v<версия>`** и **имя файла = `BarX.dmg`** — иначе ссылка в фиде не совпадёт.
-4. **`appcast.xml` не редактируй руками** — его генерирует `generate_appcast`.
-5. **Не коммить приватный ключ** (`*.key`, `BarX-Sparkle-keys/` уже в `.gitignore`).
-6. **Не теряй приватный ключ** — без него не подпишешь новые обновления.
-   Держи бэкап `~/BarX-Sparkle-keys/ed25519-private.key` в менеджере паролей/на флешке.
+1. **Порядок:** сначала `.dmg` в релиз `BarX-updates`, **потом** `appcast.xml`. Иначе 404.
+2. **Версия и build растут** (build скрипт поднимает сам).
+3. **Тег = `v<версия>`**, файл = **`BarX.dmg`**.
+4. **`appcast.xml` руками не редактируй** — его генерирует `generate_appcast`.
+5. **Приватный ключ не коммить и не терять.**
+6. **Собирать только в `/tmp`** (Desktop синхронизируется iCloud → xattr ломают подпись; скрипт уже так делает).
 
 ---
 
-## 3. Быстрый чек-лист (скопируй себе)
+## 3. Быстрый чек-лист
 
 ```
 [ ] cd ~/Desktop/BarX
 [ ] Scripts/sparkle-release.sh ~/BarX-Sparkle-keys/bin <версия>
-[ ] Проверить: build/release/BarX.dmg существует, в appcast.xml новая версия
-[ ] GitHub → Releases → New → tag v<версия> → прикрепить BarX.dmg (имя не менять) → Publish
-[ ] curl проверить, что dmg скачивается (HTTP 200)
-[ ] git add appcast.xml Info.plist && git commit -m "Release <версия>" && git push origin main
+[ ] BarX-updates → Releases → New → tag v<версия> → прикрепить BarX.dmg → Publish
+[ ] BarX-updates → appcast.xml → Edit → вставить новый appcast → Commit
+[ ] curl проверить фид и dmg (HTTP 200)
 [ ] Проверить обновление в старом приложении
 ```
 
 ---
 
-## 4. Частые ошибки и решения
+## 4. Частые ошибки
 
-| Симптом | Причина / решение |
+| Симптом | Решение |
 |---|---|
-| `fatal: not a git repository` | Ты не в папке проекта. Сначала `cd ~/Desktop/BarX`. |
-| `generate_appcast: No usable archives found` | Сборка не подписалась ad-hoc. Убедись, что запускаешь актуальный `Scripts/sparkle-release.sh` (в нём есть `codesign … --identifier com.ilya.BarX`). |
-| `Signing key not found for account ed25519` | Ключ лежит под аккаунтом `com.ilya.BarX`. Скрипт уже передаёт `--account com.ilya.BarX`; при ручном запуске добавь этот флаг. |
-| Окно обновления есть, но скачивание падает (404) | Не совпали тег/имя файла. Тег должен быть `v<версия>`, файл — `BarX.dmg`, и он должен быть **уже загружен** в релиз. |
-| macOS спрашивает доступ к Связке ключей | Разреши (кнопка «Разрешить»/«Всегда разрешать»). |
-| Sparkle пишет «you're up to date», хотя версия новая | Возможен кэш фида. Подожди пару минут или перезапусти приложение; проверь, что `appcast.xml` реально на `main` (curl выше). |
+| `not a git repository` | `cd ~/Desktop/BarX` |
+| `resource fork / Finder detritus not allowed` | Сборка попала в iCloud-папку. Используй актуальный `sparkle-release.sh` (собирает в `/tmp`). |
+| `No usable archives found` | Подпись не удалась — смотри вывод `codesign` в скрипте. |
+| `Signing key not found for account ed25519` | Скрипт передаёт `--account com.ilya.BarX`; при ручном запуске добавь этот флаг. |
+| Обновление 404 | Тег/имя файла не совпали, или dmg ещё не загружен, или appcast не обновлён. |
 
 ---
 
-## 5. Если релиз вышел с ошибкой (откат)
-
-- Заменить/перевыпустить ассет: в GitHub Release → Edit → удалить старый `.dmg`, загрузить исправленный (имя `BarX.dmg`), при необходимости поднять версию/build и пересобрать.
-- Вернуть старый фид: `git log appcast.xml` → `git revert`/`git checkout <коммит> -- appcast.xml` → закоммитить и запушить.
-- Помни: пользователи, уже обновившиеся, остаются на новой версии — «откатить» их можно только выпуском ещё более новой версии.
+## 5. Сделать исходники приватными (когда захочешь)
+1. https://github.com/Tudo5/BarX/settings → **Danger Zone**
+2. **Change repository visibility** → **Make private** → подтвердить.
+Авто-обновления продолжат работать (они идут через публичный `BarX-updates`).
 
 ---
 
 ## 6. Что пока НЕ настроено (для публичной раздачи людям)
 
-- **Подпись Apple + нотаризация** (Apple Developer, $99/год) — без этого у чужих людей
-  Gatekeeper покажет «разработчик не подтверждён» (правый клик → «Открыть»).
-  Sparkle-подпись (EdDSA) это **не** заменяет.
+- **Подпись Apple + нотаризация** (Apple Developer, $99/год): без этого у чужих людей
+  Gatekeeper покажет «разработчик не подтверждён». Sparkle-подпись (EdDSA) это **не** заменяет.
 
-> ✅ **Universal-сборка уже включена**: и `sparkle-release.sh`, и `make-dmg.sh` собирают
-> **arm64 + x86_64**. Проверка: `lipo -info build/Build/Products/Release/BarX.app/Contents/MacOS/BarX`
-> → должно быть `x86_64 arm64`.
-
-Когда оформишь Apple Developer — добавим сюда шаги подписи/нотаризации.
+> ✅ **Universal-сборка включена** (arm64 + x86_64). Проверка:
+> `lipo -info build/Build/Products/Release/BarX.app/Contents/MacOS/BarX` → `x86_64 arm64`.
