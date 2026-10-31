@@ -44,7 +44,7 @@ echo "    short=$VERSION  build=$BUILD"
 echo "==> Сборка Release"
 xcodebuild -project BarX.xcodeproj -scheme BarX -configuration Release \
   -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages \
-  CODE_SIGNING_ALLOWED=NO build >/dev/null
+  CODE_SIGNING_ALLOWED=NO ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build >/dev/null
 
 APP="build/Build/Products/Release/BarX.app"
 # ad-hoc подпись (без сертификата): чтобы Sparkle корректно ставил и запускал обновление.
