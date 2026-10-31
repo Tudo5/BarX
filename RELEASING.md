@@ -138,9 +138,12 @@ git push origin main
 
 ## 6. Что пока НЕ настроено (для публичной раздачи людям)
 
-- **Universal-сборка** — сейчас только Apple Silicon (arm64). Для Intel-Mac нужен universal-билд.
 - **Подпись Apple + нотаризация** (Apple Developer, $99/год) — без этого у чужих людей
   Gatekeeper покажет «разработчик не подтверждён» (правый клик → «Открыть»).
   Sparkle-подпись (EdDSA) это **не** заменяет.
 
-Когда это сделаем — добавим в этот документ шаги подписи/нотаризации.
+> ✅ **Universal-сборка уже включена**: и `sparkle-release.sh`, и `make-dmg.sh` собирают
+> **arm64 + x86_64**. Проверка: `lipo -info build/Build/Products/Release/BarX.app/Contents/MacOS/BarX`
+> → должно быть `x86_64 arm64`.
+
+Когда оформишь Apple Developer — добавим сюда шаги подписи/нотаризации.
