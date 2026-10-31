@@ -3,6 +3,14 @@
     <channel>
         <title>BarX</title>
         <item>
+            <title>1.5.4</title>
+            <pubDate>Sat, 31 Oct 2026 11:35:08 +0300</pubDate>
+            <sparkle:version>4</sparkle:version>
+            <sparkle:shortVersionString>1.5.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.6</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Tudo5/BarX/releases/download/v1.5.4/BarX.dmg" length="9114006" type="application/octet-stream" sparkle:edSignature="+uVZSTeDBqZGrGGjt2M87swRU99Ysv82/qTkA67iNUvIR6Y77NyaSP/1NJCYL5OEbNaspmRQriHnBAOJcNG9BQ=="/>
+        </item>
+        <item>
             <title>1.5.3</title>
             <pubDate>Fri, 30 Oct 2026 19:02:45 +0300</pubDate>
             <sparkle:version>3</sparkle:version>
